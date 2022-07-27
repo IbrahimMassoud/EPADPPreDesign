@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
     <title>
-        Pre-Design Export
+        Pre-Design Import
     </title>
     <link rel="icon" href="Images/EPADPLogo.png">
 
@@ -260,7 +260,8 @@ li a:hover:not(.active) {
 
         ) => {
 
-            let geometry;
+            let geometry,intersectsPoints ;
+
             const projectsLyr = new FeatureLayer({
                 url: "https://services8.arcgis.com/QF1SFulWoGe9X2JG/arcgis/rest/services/EPADPDemo/FeatureServer/0",
                 title: "Projects"
@@ -287,6 +288,79 @@ li a:hover:not(.active) {
                     }
                 }
             });
+
+            let pointsFeatures = []
+                let pointsFields = [{
+                    name: "ObjectID_1",
+                    alias: "ObjectID",
+                    type: "oid",
+                },
+                {
+                    name: "X",
+                    alias: "X",
+                    type: "double",
+                },
+                {
+                    name: "Y",
+                    alias: "Y",
+                    type: "double",
+                },
+                {
+                    name: "elevation",
+                    alias: "Elevation",
+                    type: "double",
+                },
+                {
+                    name: "name",
+                    alias: "Name",
+                    type: "string",
+                },
+                {
+                    name: "WT",
+                    alias: "WT",
+                    type: "string",
+                },
+                {
+                    name: "K",
+                    alias: "K",
+                    type: "string",
+                },
+                {
+                    name: "L",
+                    alias: "L",
+                    type: "string",
+                },
+                {
+                    name: "GWS",
+                    alias: "GWS",
+                    type: "string",
+                },
+                {
+                    name: "Soil_Text",
+                    alias: "Soil Text",
+                    type: "string",
+                },
+                {
+                    name: "Clay",
+                    alias: "Clay",
+                    type: "string",
+                },
+                {
+                    name: "EC",
+                    alias: "EC",
+                    type: "string",
+                },
+                {
+                    name: "sn",
+                    alias: "sn",
+                    type: "string",
+                },
+                {
+                    name: "CaCO3",
+                    alias: "CaCO3",
+                    type: "string",
+                }
+                ]
 
             const map = new Map({
                 basemap: "satellite",
@@ -404,80 +478,6 @@ li a:hover:not(.active) {
 
             view.when(() => {
 
-
-                let pointsFeatures = []
-                let pointsFields = [{
-                    name: "ObjectID_1",
-                    alias: "ObjectID",
-                    type: "oid",
-                },
-                {
-                    name: "X",
-                    alias: "X",
-                    type: "double",
-                },
-                {
-                    name: "Y",
-                    alias: "Y",
-                    type: "double",
-                },
-                {
-                    name: "elevation",
-                    alias: "Elevation",
-                    type: "double",
-                },
-                {
-                    name: "name",
-                    alias: "Name",
-                    type: "string",
-                },
-                {
-                    name: "WT",
-                    alias: "WT",
-                    type: "string",
-                },
-                {
-                    name: "K",
-                    alias: "K",
-                    type: "string",
-                },
-                {
-                    name: "L",
-                    alias: "L",
-                    type: "string",
-                },
-                {
-                    name: "GWS",
-                    alias: "GWS",
-                    type: "string",
-                },
-                {
-                    name: "Soil_Text",
-                    alias: "Soil Text",
-                    type: "string",
-                },
-                {
-                    name: "Clay",
-                    alias: "Clay",
-                    type: "string",
-                },
-                {
-                    name: "EC",
-                    alias: "EC",
-                    type: "string",
-                },
-                {
-                    name: "sn",
-                    alias: "sn",
-                    type: "string",
-                },
-                {
-                    name: "CaCO3",
-                    alias: "CaCO3",
-                    type: "string",
-                }
-                ]
-
                 projectsLyr.queryFeatures().then(function (results) {
                     geometry = results.features[results.features.length - 1].geometry;
                 }).then(() => {
@@ -502,7 +502,7 @@ li a:hover:not(.active) {
                             gridPoints.queryFeatures(query)
                                 .then(function (response) {
                                     let newLyr;
-                                    let intersectsPoints = response.features
+                                    intersectsPoints = response.features
                                     intersectsPoints.forEach(point => {
                                         let pointCenter = point.geometry.extent.center;
                                         pointsFeatures.push(
@@ -551,7 +551,6 @@ li a:hover:not(.active) {
                                         view: view,
                                         layer: newlyr,
                                         tableTemplate: {
-
                                         },
                                         container: tableDiv
                                     });
@@ -602,9 +601,61 @@ li a:hover:not(.active) {
             });
             map.layers.add(layer, 0)
 
-            document.getElementById("ShareBtn").addEventListener("click", () => {
+            document.getElementById("importBtn").addEventListener("click", () => {
 
-                displayResult("success", " Investigation team notified ")
+                pointsFeatures = []
+                intersectsPoints.forEach(point => {
+                                        let pointCenter = point.geometry.extent.center;
+                                        pointsFeatures.push(
+                                            new Graphic({
+                                                geometry: point.geometry,
+                                                attributes:
+                                                {
+                                                    elevation: point.attributes.elevation,
+                                                    name: point.attributes.name,
+                                                    X: pointCenter.x,
+                                                    Y: pointCenter.y,
+                                                    WT: point.attributes.WT,
+                                                    K: point.attributes.K,
+                                                    L: point.attributes.L,
+                                                    GWS: point.attributes.GWS,
+                                                    Soil_Text: point.attributes.Soil_Text,
+                                                    Clay: point.attributes.Clay,
+                                                    sn: point.attributes.sn,
+                                                    EC: point.attributes.EC,
+                                                    CaCO3: point.attributes.CaCO3,
+                                                }
+                                                ,
+                                            })
+                                        );
+                })
+
+                let _newlyr = new FeatureLayer({
+                                            source: pointsFeatures,
+                                            objectIdField: "ObjectID_1",
+                                            fields: pointsFields,
+                                        });
+                                        console.log(pointsFeatures)
+                                        console.log(pointsFields)
+
+                                    
+
+                setTimeout(()=>{
+                    console.log(pointsFeatures)
+                                        console.log(pointsFields)
+
+                    tableDiv = ""
+                    featureTable = new FeatureTable({
+                                        view: view,
+                                        layer: _newlyr,
+                                        tableTemplate: {
+                                        },
+                                        container: tableDiv
+                                    });
+                    displayResult("success", " Data imported successfully ")
+
+                },3000)
+
             })
 
 
@@ -616,13 +667,11 @@ li a:hover:not(.active) {
 
 <body>
 
-   
 <ul>
-    <li><a class="active" href="#home">Home</a></li>
-    <li><a href="#news">News</a></li>
-    <li><a href="#contact">Contact</a></li>
-    <li style="float:right"><a href="#about">About</a></li>
-  </ul>
+    <li><a href="Export.html">Export</a></li>
+    <li><a class="active" href="#">Import</a></li>
+
+</ul>
 
     <div id="appContainer">
 
@@ -640,9 +689,9 @@ li a:hover:not(.active) {
             <br>
             <hr>
             <br>
-            <button id="ShareBtn" class="esri-widget esri-button">Share</button>
+            <button id="importBtn" class="esri-widget esri-button">Import</button>
             <br>
-            <div id="info" class="esri-widget infoAlert">Share data to investigation team</div>
+            <div id="info" class="esri-widget infoAlert">Import data from investigation team</div>
         </div>
     </div>
 </body>
